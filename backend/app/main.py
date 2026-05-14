@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.db.database import engine
-from app.models import user
+from app.models import Base
 from app.api.api import api_router
 
 # Create all tables stored in the Base metadata
-user.Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="FinPilot API", description="AI-powered financial goal planning system")
 
