@@ -35,3 +35,29 @@ def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """
     users = crud_user.get_users(db, skip=skip, limit=limit)
     return users
+
+@router.put("/{user_id}", response_model=schemas_user.User)
+def update_user(user_id: int, user_update: schemas_user.UserUpdate, db: Session = Depends(get_db)):
+    """
+    Update a user's details.
+    """
+    db_user = crud_user.get_user(db, user_id=user_id)
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    # If email is being updated, check if it's already taken
+    if user_update.email and user_update.email != db_user.email:
+        existing_user = crud_user.get_user_by_email(db, email=user_update.email)
+        if existing_user:
+            raise HTTPException(status_code=400, detail="Email already registered")
+    return crud_user.update_user(db=db, user_id=user_id, user=user_update)
+
+@router.delete("/{user_id}", status_code=204)
+def delete_user(user_id: int, db: Session = Depends(get_db)):
+    """
+    Delete a user.
+    """
+    db_user = crud_user.get_user(db, user_id=user_id)
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    crud_user.delete_user(db=db, user_id=user_id)
+    return None

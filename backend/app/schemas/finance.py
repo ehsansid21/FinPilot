@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 # --- Financial Profile ---
 class FinancialProfileBase(BaseModel):
@@ -7,6 +8,10 @@ class FinancialProfileBase(BaseModel):
 
 class FinancialProfileCreate(FinancialProfileBase):
     pass
+
+class FinancialProfileUpdate(BaseModel):
+    monthly_income: Optional[float] = None
+    current_savings: Optional[float] = None
 
 class FinancialProfile(FinancialProfileBase):
     id: int
@@ -24,6 +29,11 @@ class ExpenseBase(BaseModel):
 class ExpenseCreate(ExpenseBase):
     pass
 
+class ExpenseUpdate(BaseModel):
+    name: Optional[str] = None
+    amount: Optional[float] = None
+    is_recurring: Optional[bool] = None
+
 class Expense(ExpenseBase):
     id: int
     user_id: int
@@ -39,6 +49,11 @@ class GoalBase(BaseModel):
 
 class GoalCreate(GoalBase):
     pass
+
+class GoalUpdate(BaseModel):
+    name: Optional[str] = None
+    target_amount: Optional[float] = None
+    months_to_goal: Optional[int] = None
 
 class Goal(GoalBase):
     id: int

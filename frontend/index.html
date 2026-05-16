@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinPilot - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="logo">FinPilot 🚀</div>
+        <div class="user-status" id="userStatus">Not Logged In</div>
+    </header>
+
+    <main class="dashboard-container">
+        
+        <!-- Login / Registration Section -->
+        <section id="authSection" class="panel auth-panel">
+            <h2>Welcome to FinPilot</h2>
+            <p>Register a new user or log in to get started.</p>
+            <form id="authForm">
+                <div class="form-group">
+                    <label for="name">Full Name (for registration)</label>
+                    <input type="text" id="name" placeholder="E.g., Jane Doe">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="jane@example.com" required>
+                </div>
+                <div class="auth-buttons">
+                    <button type="submit" id="registerBtn">Register</button>
+                    <button type="button" id="loginBtn" class="btn-secondary">Log In (by Email)</button>
+                </div>
+            </form>
+            <div id="authMessage" class="message hidden"></div>
+        </section>
+
+        <!-- Main Dashboard Content (Hidden until logged in) -->
+        <div id="mainContent" class="dashboard-grid hidden">
+            
+            <!-- Left Column: Data Entry -->
+            <div class="data-column">
+                
+                <section class="panel">
+                    <h3>Financial Profile</h3>
+                    <form id="profileForm">
+                        <div class="form-group">
+                            <label>Monthly Income ($)</label>
+                            <input type="number" id="monthlyIncome" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Current Savings ($)</label>
+                            <input type="number" id="currentSavings" step="0.01" required>
+                        </div>
+                        <button type="submit">Save Profile</button>
+                    </form>
+                </section>
+
+                <section class="panel">
+                    <h3>Add Expense</h3>
+                    <form id="expenseForm">
+                        <div class="form-group">
+                            <label>Expense Name</label>
+                            <input type="text" id="expenseName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Amount ($)</label>
+                            <input type="number" id="expenseAmount" step="0.01" required>
+                        </div>
+                        <button type="submit">Add Expense</button>
+                    </form>
+                </section>
+
+                <section class="panel">
+                    <h3>Add Goal</h3>
+                    <form id="goalForm">
+                        <div class="form-group">
+                            <label>Goal Name</label>
+                            <input type="text" id="goalName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Target Amount ($)</label>
+                            <input type="number" id="goalAmount" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Months to Goal</label>
+                            <input type="number" id="goalMonths" required>
+                        </div>
+                        <button type="submit">Add Goal</button>
+                    </form>
+                </section>
+
+            </div>
+
+            <!-- Right Column: Results & AI -->
+            <div class="results-column">
+                
+                <section class="panel highlight-panel">
+                    <div class="panel-header">
+                        <h3>Simulation Results</h3>
+                        <button id="runSimulationBtn" class="btn-action">Run Simulation</button>
+                    </div>
+                    <div id="simulationContent" class="simulation-content">
+                        <p class="placeholder-text">Click 'Run Simulation' to see your financial trajectory.</p>
+                    </div>
+                </section>
+
+                <section class="panel ai-panel">
+                    <div class="panel-header">
+                        <h3>🤖 AI Advisor</h3>
+                        <button id="getAdviceBtn" class="btn-action">Get Advice</button>
+                    </div>
+                    <div id="aiAdviceContent" class="ai-content">
+                        <p class="placeholder-text">Ask your AI advisor for tailored financial advice based on your current simulation.</p>
+                    </div>
+                </section>
+
+            </div>
+
+        </div>
+    </main>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
