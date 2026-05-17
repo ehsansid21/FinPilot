@@ -4,13 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FinPilot - Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <header class="header">
         <div class="logo">FinPilot 🚀</div>
-        <div class="user-status" id="userStatus">Not Logged In</div>
+        <div class="user-status-container">
+            <span class="user-status" id="userStatus">Not Logged In</span>
+            <button type="button" id="logoutBtn" class="btn-logout hidden">Log Out</button>
+        </div>
     </header>
 
     <main class="dashboard-container">
@@ -46,42 +50,56 @@
                     <h3>Financial Profile</h3>
                     <form id="profileForm">
                         <div class="form-group">
-                            <label>Monthly Income ($)</label>
-                            <input type="number" id="monthlyIncome" step="0.01" required>
+                            <label>Monthly Income (₹)</label>
+                            <input type="number" id="monthlyIncome" step="1" required>
                         </div>
                         <div class="form-group">
-                            <label>Current Savings ($)</label>
-                            <input type="number" id="currentSavings" step="0.01" required>
+                            <label>Current Savings (₹)</label>
+                            <input type="number" id="currentSavings" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Target Monthly Savings (₹)</label>
+                            <input type="number" id="monthlySavings" step="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Risk Tolerance (%)</label>
+                            <input type="number" id="riskTolerance" min="0" max="100" placeholder="E.g., 50" required>
                         </div>
                         <button type="submit">Save Profile</button>
                     </form>
                 </section>
 
                 <section class="panel">
-                    <h3>Add Expense</h3>
+                    <h3>Expenses</h3>
+                    <div id="expensesList" class="item-list"></div>
+                    <div class="panel-divider"></div>
+                    <h3 class="subsection-title">Add Expense</h3>
                     <form id="expenseForm">
                         <div class="form-group">
                             <label>Expense Name</label>
                             <input type="text" id="expenseName" required>
                         </div>
                         <div class="form-group">
-                            <label>Amount ($)</label>
-                            <input type="number" id="expenseAmount" step="0.01" required>
+                            <label>Amount (₹)</label>
+                            <input type="number" id="expenseAmount" step="1" required>
                         </div>
                         <button type="submit">Add Expense</button>
                     </form>
                 </section>
 
                 <section class="panel">
-                    <h3>Add Goal</h3>
+                    <h3>Goals</h3>
+                    <div id="goalsList" class="item-list"></div>
+                    <div class="panel-divider"></div>
+                    <h3 class="subsection-title">Add Goal</h3>
                     <form id="goalForm">
                         <div class="form-group">
                             <label>Goal Name</label>
                             <input type="text" id="goalName" required>
                         </div>
                         <div class="form-group">
-                            <label>Target Amount ($)</label>
-                            <input type="number" id="goalAmount" step="0.01" required>
+                            <label>Target Amount (₹)</label>
+                            <input type="number" id="goalAmount" step="1" required>
                         </div>
                         <div class="form-group">
                             <label>Months to Goal</label>
@@ -104,15 +122,25 @@
                     <div id="simulationContent" class="simulation-content">
                         <p class="placeholder-text">Click 'Run Simulation' to see your financial trajectory.</p>
                     </div>
+                    <div id="budgetChartWrapper" class="chart-wrapper hidden" style="margin-top: 1.5rem; max-height: 250px; display: flex; justify-content: center;">
+                        <canvas id="budgetChart" style="max-width: 250px; max-height: 250px;"></canvas>
+                    </div>
                 </section>
 
                 <section class="panel ai-panel">
                     <div class="panel-header">
                         <h3>🤖 AI Advisor</h3>
-                        <button id="getAdviceBtn" class="btn-action">Get Advice</button>
                     </div>
                     <div id="aiAdviceContent" class="ai-content">
-                        <p class="placeholder-text">Ask your AI advisor for tailored financial advice based on your current simulation.</p>
+                        <p class="placeholder-text">Ask your AI advisor for tailored financial advice based on your current simulation, or enter a custom question below!</p>
+                    </div>
+                    <div id="allocationChartWrapper" class="chart-wrapper hidden" style="margin-top: 1.5rem; margin-bottom: 1.5rem; display: flex; flex-direction: column; align-items: center;">
+                        <h4 style="margin-bottom: 0.75rem; color: var(--text-secondary); text-align: center; font-weight: 600; font-size: 0.95rem; letter-spacing: 0.5px;">RECOMMENDED ASSET ALLOCATION</h4>
+                        <canvas id="allocationChart" style="max-width: 230px; max-height: 230px;"></canvas>
+                    </div>
+                    <div class="ai-chat-input-container">
+                        <input type="text" id="aiCustomQuery" class="chat-input" placeholder="Ask FinPilot anything about your plan (e.g. 'Should I buy Gold?')...">
+                        <button id="getAdviceBtn" class="btn-chat-send">Ask AI</button>
                     </div>
                 </section>
 
