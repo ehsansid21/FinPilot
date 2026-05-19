@@ -9,6 +9,8 @@ class FinancialProfile(Base):
     user_id = Column(Integer, ForeignKey("users.id"), unique=True, index=True)
     monthly_income = Column(Float, default=0.0)
     current_savings = Column(Float, default=0.0)
+    risk_tolerance = Column(String, default="Medium")
+    target_savings = Column(Float, default=0.0)
 
     user = relationship("User", back_populates="financial_profile")
 

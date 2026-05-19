@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
+from app.core.security import get_password_hash, verify_password
 
 def get_user(db: Session, user_id: int):
     """Retrieve a single user by their ID."""
@@ -17,18 +18,18 @@ def get_users(db: Session, skip: int = 0, limit: int = 100):
 
 def create_user(db: Session, user: UserCreate):
     """Create a new user in the database."""
-    # Create a SQLAlchemy model instance with the data from the Pydantic schema
-    db_user = User(email=user.email, name=user.name)
+    # Hash user password
+    hashed_password = get_password_hash(user.password)
     
-    # Add that instance object to your database session
+    db_user = User(
+        email=user.email,
+        name=user.name,
+        hashed_password=hashed_password
+    )
+    
     db.add(db_user)
-    
-    # Commit the changes to the database (so that they are saved)
     db.commit()
-    
-    # Refresh your instance (so that it contains any new data from the database, like the generated ID)
     db.refresh(db_user)
-    
     return db_user
 
 def update_user(db: Session, user_id: int, user: UserUpdate):
@@ -36,6 +37,8 @@ def update_user(db: Session, user_id: int, user: UserUpdate):
     db_user = db.query(User).filter(User.id == user_id).first()
     if db_user:
         update_data = user.model_dump(exclude_unset=True)
+        if "password" in update_data and update_data["password"]:
+            update_data["hashed_password"] = get_password_hash(update_data.pop("password"))
         for key, value in update_data.items():
             setattr(db_user, key, value)
         db.add(db_user)
@@ -50,3 +53,13 @@ def delete_user(db: Session, user_id: int):
         db.delete(db_user)
         db.commit()
     return db_user
+
+def authenticate_user(db: Session, email: str, password: str):
+    """Authenticate a user by email and password."""
+    db_user = get_user_by_email(db, email=email)
+    if not db_user:
+        return False
+    if not verify_password(password, db_user.hashed_password):
+        return False
+    return db_user
+

@@ -1,4 +1,19 @@
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = (window.location.protocol === 'file:') ? 'http://localhost:8000/api' : '/api';
+
+// Intercept window.fetch to automatically inject JWT access token
+const originalFetch = window.fetch;
+window.fetch = async function (url, options) {
+    options = options || {};
+    options.headers = options.headers || {};
+    
+    const token = localStorage.getItem('finpilot_access_token');
+    if (token) {
+        options.headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return originalFetch(url, options);
+};
+
 
 // Global State
 let currentUserId = null;
@@ -240,8 +255,23 @@ function updateAllocationChart(riskPercent) {
 window.addEventListener('DOMContentLoaded', async () => {
     const savedUserId = localStorage.getItem('finpilot_user_id');
     const savedUserName = localStorage.getItem('finpilot_user_name');
-    if (savedUserId) {
-        await loginUser(parseInt(savedUserId), savedUserName);
+    const savedToken = localStorage.getItem('finpilot_access_token');
+    
+    if (savedUserId && savedToken) {
+        try {
+            // Verify token validity by calling /users/me
+            const res = await fetch(`${API_BASE_URL}/users/me`);
+            if (res.ok) {
+                const meData = await res.json();
+                await loginUser(meData.id, meData.name, savedToken);
+            } else {
+                handleLogout();
+            }
+        } catch (err) {
+            console.error("Session verification failed:", err);
+            // Offline/Network issues fallback
+            await loginUser(parseInt(savedUserId), savedUserName, savedToken);
+        }
     }
 });
 
@@ -251,19 +281,36 @@ async function handleRegister(e) {
     e.preventDefault();
     const name = document.getElementById('name').value;
     const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    
+    if (!name || !email || !password) {
+        showAuthMessage('Please fill in name, email, and password.', 'error');
+        return;
+    }
     
     try {
         const res = await fetch(`${API_BASE_URL}/users/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email })
+            body: JSON.stringify({ name, email, password })
         });
         const data = await res.json();
         
         if (res.ok) {
-            await loginUser(data.id, data.name);
+            // Registration succeeded, now login automatically
+            const loginRes = await fetch(`${API_BASE_URL}/users/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const loginData = await loginRes.json();
+            if (loginRes.ok) {
+                await loginUser(data.id, data.name, loginData.access_token);
+            } else {
+                showAuthMessage('Registration succeeded but automatic login failed.', 'error');
+            }
         } else {
-            showAuthMessage(data.detail, 'error');
+            showAuthMessage(data.detail || 'Registration failed.', 'error');
         }
     } catch (err) {
         showAuthMessage('Network error.', 'error');
@@ -272,32 +319,50 @@ async function handleRegister(e) {
 
 async function handleLogin() {
     const email = document.getElementById('email').value;
-    if (!email) {
-        showAuthMessage('Please enter an email to log in.', 'error');
+    const password = document.getElementById('password').value;
+    
+    if (!email || !password) {
+        showAuthMessage('Please enter email and password to log in.', 'error');
         return;
     }
     
     try {
-        const res = await fetch(`${API_BASE_URL}/users/`);
-        const users = await res.json();
-        const user = users.find(u => u.email === email);
+        const res = await fetch(`${API_BASE_URL}/users/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
         
-        if (user) {
-            await loginUser(user.id, user.name);
+        if (res.ok) {
+            // Save access token to trigger the fetch header interceptor
+            localStorage.setItem('finpilot_access_token', data.access_token);
+            
+            // Retrieve current user details to get name and id
+            const meRes = await fetch(`${API_BASE_URL}/users/me`);
+            if (meRes.ok) {
+                const meData = await meRes.json();
+                await loginUser(meData.id, meData.name, data.access_token);
+            } else {
+                showAuthMessage('Could not retrieve user details.', 'error');
+            }
         } else {
-            showAuthMessage('User not found. Please register.', 'error');
+            showAuthMessage(data.detail || 'Incorrect email or password.', 'error');
         }
     } catch (err) {
         showAuthMessage('Network error.', 'error');
     }
 }
 
-async function loginUser(id, name) {
+async function loginUser(id, name, token) {
     currentUserId = id;
     
     // Save to localStorage for page-reload persistence
     localStorage.setItem('finpilot_user_id', id);
     localStorage.setItem('finpilot_user_name', name || `User ${id}`);
+    if (token) {
+        localStorage.setItem('finpilot_access_token', token);
+    }
     
     userStatus.textContent = `Logged in as: ${name || 'User ' + id}`;
     logoutBtn.classList.remove('hidden');
@@ -315,6 +380,7 @@ function handleLogout() {
     // Clear localStorage session
     localStorage.removeItem('finpilot_user_id');
     localStorage.removeItem('finpilot_user_name');
+    localStorage.removeItem('finpilot_access_token');
     currentUserId = null;
     deleteConfirmations = {};
     
@@ -337,6 +403,7 @@ function showAuthMessage(text, type) {
     authMessage.textContent = text;
     authMessage.className = `message ${type}`;
 }
+
 
 // --- Data Synchronization ---
 

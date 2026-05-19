@@ -5,6 +5,8 @@ from typing import Optional
 class FinancialProfileBase(BaseModel):
     monthly_income: float
     current_savings: float = 0.0
+    risk_tolerance: str = "50%"
+    target_savings: float = 0.0
 
 class FinancialProfileCreate(FinancialProfileBase):
     pass
@@ -12,6 +14,8 @@ class FinancialProfileCreate(FinancialProfileBase):
 class FinancialProfileUpdate(BaseModel):
     monthly_income: Optional[float] = None
     current_savings: Optional[float] = None
+    risk_tolerance: Optional[str] = None
+    target_savings: Optional[float] = None
 
 class FinancialProfile(FinancialProfileBase):
     id: int

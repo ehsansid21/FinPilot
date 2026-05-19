@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: finpilot_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:////app/data/finpilot.db
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - SECRET_KEY=${SECRET_KEY:-309bf14a29a101f37b98bfdc600b3e5cb3a0d9b4db73e72251a14b3d7589d8cf}
+    volumes:
+      - ./backend/data:/app/data
+    restart: always
+
+  frontend:
+    build: ./frontend
+    container_name: finpilot_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: always

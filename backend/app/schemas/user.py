@@ -8,12 +8,13 @@ class UserBase(BaseModel):
 
 # Schema for creating a user (e.g., what the frontend sends)
 class UserCreate(UserBase):
-    pass # No extra fields for now, but usually 'password' would go here
+    password: str
 
 # Schema for updating a user
 class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     name: Optional[str] = None
+    password: Optional[str] = None
 
 # Schema for reading a user from the API (includes ID from database)
 class User(UserBase):
@@ -21,3 +22,17 @@ class User(UserBase):
 
     class Config:
         from_attributes = True # Allows Pydantic to read data from SQLAlchemy models
+
+# Schema for user login
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+# Schemas for JWT tokens
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    user_id: Optional[int] = None
+

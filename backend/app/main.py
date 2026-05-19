@@ -14,10 +14,11 @@ app = FastAPI(title="FinPilot API", description="AI-powered financial goal plann
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Allows all origins (for development)
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],  # Allows all HTTP methods (GET, POST, etc.)
     allow_headers=["*"],  # Allows all headers
 )
+
 
 app.include_router(api_router, prefix="/api")
 @app.get("/ping")

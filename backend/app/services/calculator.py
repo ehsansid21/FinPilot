@@ -8,6 +8,8 @@ def calculate_simulation(user_id: int, db: Session):
 
     monthly_income = profile.monthly_income if profile else 0.0
     current_savings = profile.current_savings if profile else 0.0
+    risk_tolerance = profile.risk_tolerance if profile else "50%"
+    target_savings = profile.target_savings if profile else 0.0
 
     total_monthly_expenses = sum(exp.amount for exp in expenses)
     monthly_capacity = monthly_income - total_monthly_expenses
@@ -28,15 +30,19 @@ def calculate_simulation(user_id: int, db: Session):
             "required_monthly": required
         })
 
-    is_feasible = monthly_capacity >= required_monthly_for_goals
+    is_feasible = target_savings >= required_monthly_for_goals
+    savings_plan_feasible = target_savings <= monthly_capacity
 
     return {
         "monthly_income": monthly_income,
         "current_savings": current_savings,
+        "risk_tolerance": risk_tolerance,
+        "target_savings": target_savings,
         "total_monthly_expenses": total_monthly_expenses,
         "monthly_savings_capacity": monthly_capacity,
         "required_monthly_for_goals": required_monthly_for_goals,
         "is_feasible": is_feasible,
+        "savings_plan_feasible": savings_plan_feasible,
         "goals": goals_data,
         "expenses": [{"name": exp.name, "amount": exp.amount} for exp in expenses]
     }
